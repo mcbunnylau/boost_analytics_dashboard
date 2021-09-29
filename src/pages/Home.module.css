@@ -34,3 +34,14 @@
   margin: 0 20px;
   width: calc(100px * 12 - 40px);
 }
+
+.chartButton {
+  margin: 0 10px;
+  background-color: #181818;
+  text-decoration: none;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  display: inline-block;
+}

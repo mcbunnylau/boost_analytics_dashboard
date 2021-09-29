@@ -1,64 +1,69 @@
-import React from "react";
-import {
-  CartesianGrid,
-  Label,
-  Legend,
-  Line,
-  LineChart,
-  Pie,
-  PieChart,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Text,
-} from "recharts";
+import React, { useState } from "react";
+import { useEffect } from "react/cjs/react.development";
+import { Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import styles from "./Home.module.css";
 
+const contracts = [
+  "0x3472A5A71965499acd81997a54BBA8D852C6E53d",
+  "0x798d1be841a82a273720ce31c822c61a67a601c3",
+];
+
 const Home = () => {
-  const data = [
-    {
-      date: "08/05/2021",
-      AUM: 4000,
-      BADGER: 2400,
-      DIGG: 2400,
-    },
-    {
-      date: "08/06/2021",
-      AUM: 3000,
-      BADGER: 1398,
-      DIGG: 2210,
-    },
-    {
-      date: "08/07/2021",
-      AUM: 2000,
-      BADGER: 9800,
-      DIGG: 2290,
-    },
-    {
-      date: "08/08/2021",
-      AUM: 2780,
-      BADGER: 3908,
-      DIGG: 2000,
-    },
-    {
-      date: "08/09/2021",
-      AUM: 1890,
-      BADGER: 4800,
-      DIGG: 2181,
-    },
-    {
-      date: "08/10/2021",
-      AUM: 2390,
-      BADGER: 3800,
-      DIGG: 2500,
-    },
-    {
-      date: "08/11/2021",
-      AUM: 3490,
-      BADGER: 4300,
-      DIGG: 2100,
-    },
-  ];
+  const [chart, setChart] = useState("");
+  const [data, setData] = useState();
+  const [data2, setData2] = useState();
+  const [data3, setData3] = useState();
+  useEffect(() => {
+    const query = async () => {
+      let response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[0]}/market_chart/?vs_currency=usd&days=300`
+      );
+      let json = await response.json();
+      // transform BADGER data
+      let newData = json.prices.map((entry) => {
+        let newEntry = {};
+        const date = new Date(entry[0]);
+        newEntry["date"] =
+          date.getUTCDate() +
+          "/" +
+          (date.getUTCMonth() + 1) +
+          "/" +
+          date.getUTCFullYear();
+        newEntry["price"] = entry[1];
+        return newEntry;
+      });
+      setData(newData);
+
+      response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[1]}/market_chart/?vs_currency=usd&days=300`
+      );
+      json = await response.json();
+      // transform DIGG data
+      newData = json.prices.map((entry) => {
+        let newEntry = {};
+        const date = new Date(entry[0]);
+        newEntry["date"] =
+          date.getUTCDate() +
+          "/" +
+          (date.getUTCMonth() + 1) +
+          "/" +
+          date.getUTCFullYear();
+        newEntry["price"] = entry[1];
+        return newEntry;
+      });
+      setData2(newData);
+    };
+    query();
+  }, []);
+  const BADGERChart = () => {
+    setChart("BADGER");
+  };
+  const DIGGChart = () => {
+    setChart("DIGG");
+  };
+  const AUMChart = () => {
+    setChart("AUM");
+  };
 
   return (
     <div className={styles.content}>
@@ -80,39 +85,67 @@ const Home = () => {
       </div>
       <div className={styles.column}>
         <div className={[styles.wrapper, styles.row9].join(" ")}>
+          <div>
+            <button
+              className={[styles.chartButton].join(" ")}
+              onClick={BADGERChart}
+            >
+              BADGER Price
+            </button>
+            <button
+              className={[styles.chartButton].join(" ")}
+              onClick={DIGGChart}
+            >
+              DIGG Price
+            </button>
+            <button
+              className={[styles.chartButton].join(" ")}
+              onClick={DIGGChart}
+            >
+              AUM Price
+            </button>
+          </div>
           <LineChart
             width={900 - 40}
             height={400}
-            data={data}
             margin={{
-              top: 20,
-              right: 40,
+              top: 5,
+              right: 30,
               left: 20,
-              bottom: 50,
+              bottom: 5,
             }}
           >
-            <XAxis dataKey="date" angle={-45} textAnchor="end" />
-            <YAxis />
-            <Tooltip />
-            <Legend verticalAlign="top" height={36} />
-            <Line type="monotone" dataKey="AUM" stroke="#8884d8" />
-            <Line type="monotone" dataKey="BADGER" stroke="#82ca9d" />
-            <Line type="monotone" dataKey="DIGG" stroke="red" />
+            <XAxis dataKey="date" />
+            <YAxis yAxisId="left" />
+            <Tooltip
+              contentStyle={{
+                color: "black",
+                backgroundColor: "white",
+                borderRadius: 10,
+              }}
+            />
+            <Legend />
+            <Line
+              name="DIGG Price"
+              type="monotone"
+              stroke="orange"
+              data={
+                chart == "BADGER"
+                  ? data
+                  : chart == "DIGG"
+                  ? data2
+                  : chart == "AUM"
+                  ? data3
+                  : data
+              }
+              dataKey="price"
+              dot={false}
+              activeDot={{ r: 8 }}
+              yAxisId="left"
+            />
           </LineChart>
         </div>
         <div className={[styles.wrapper, styles.row3].join(" ")}>
-          <PieChart width={300 - 40} height={400}>
-            <Pie
-              data={data}
-              dataKey="AUM"
-              nameKey="date"
-              cx="50%"
-              cy="50%"
-              outerRadius={100}
-              fill="orange"
-              //   label
-            />
-          </PieChart>
           <div>Demographic Breakdown</div>
         </div>
       </div>
