@@ -1,18 +1,29 @@
+import logo from "./logo.svg";
 import "./App.css";
-import data from "./Query";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import React from "react";
+import Sidebar from "./components/Sidebar";
+import Home from "./pages/Home";
+import AUM from "./pages/AUM";
+import Tokens from "./pages/Tokens";
 
-const App = () => {
+function App() {
   return (
-    <div>
-      {data.map((block) => {
-        return (
-          <div>
-            Block: {block[0]} ---> Balance: {block[1]}
-          </div>
-        );
-      })}
-    </div>
+    <Router>
+      <Sidebar />
+      <Switch>
+        <Route path="/Home">
+          <Home />
+        </Route>
+        <Route path="/AUM">
+          <AUM />
+        </Route>
+        <Route path="/Tokens">
+          <Tokens />
+        </Route>
+      </Switch>
+    </Router>
   );
-};
+}
 
 export default App;
