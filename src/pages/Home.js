@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { useEffect } from "react/cjs/react.development";
-import { Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Legend,
+  Line,
+  LineChart,
+  ReferenceLine,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import styles from "./Home.module.css";
 
 const contracts = [
@@ -15,6 +23,7 @@ const Home = () => {
   const [data3, setData3] = useState();
   useEffect(() => {
     const query = async () => {
+      // fetch BADGER
       let response = await fetch(
         `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[0]}/market_chart/?vs_currency=usd&days=300`
       );
@@ -24,9 +33,10 @@ const Home = () => {
         let newEntry = {};
         const date = new Date(entry[0]);
         newEntry["date"] =
-          date.getUTCDate() +
+          date.getUTCMonth() +
+          1 +
           "/" +
-          (date.getUTCMonth() + 1) +
+          date.getUTCDate() +
           "/" +
           date.getUTCFullYear();
         newEntry["price"] = entry[1];
@@ -34,6 +44,7 @@ const Home = () => {
       });
       setData(newData);
 
+      // fetch DIGG
       response = await fetch(
         `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[1]}/market_chart/?vs_currency=usd&days=300`
       );
@@ -43,15 +54,36 @@ const Home = () => {
         let newEntry = {};
         const date = new Date(entry[0]);
         newEntry["date"] =
-          date.getUTCDate() +
+          date.getUTCMonth() +
+          1 +
           "/" +
-          (date.getUTCMonth() + 1) +
+          date.getUTCDate() +
           "/" +
           date.getUTCFullYear();
         newEntry["price"] = entry[1];
         return newEntry;
       });
       setData2(newData);
+
+      // fetch AUM/TVL
+      response = await fetch(`https://api.llama.fi/protocol/badger-dao`);
+      json = await response.json();
+      // transform AUM data
+      newData = json.tvl.map((entry) => {
+        let newEntry = {};
+        const date = new Date(entry.date * 1000); // *1000 for ms instead of secs
+        newEntry["date"] =
+          date.getUTCMonth() +
+          1 +
+          "/" +
+          date.getUTCDate() +
+          "/" +
+          date.getUTCFullYear();
+        newEntry["price"] = entry.totalLiquidityUSD;
+        return newEntry;
+      });
+      console.log(newData);
+      setData3(newData);
     };
     query();
   }, []);
@@ -100,9 +132,9 @@ const Home = () => {
             </button>
             <button
               className={[styles.chartButton].join(" ")}
-              onClick={DIGGChart}
+              onClick={AUMChart}
             >
-              AUM Price
+              AUM
             </button>
           </div>
           <LineChart
@@ -115,8 +147,8 @@ const Home = () => {
               bottom: 5,
             }}
           >
-            <XAxis dataKey="date" />
-            <YAxis yAxisId="left" />
+            <XAxis dataKey="date" xAxisId="xAxis" />
+            <YAxis />
             <Tooltip
               contentStyle={{
                 color: "black",
@@ -126,7 +158,15 @@ const Home = () => {
             />
             <Legend />
             <Line
-              name="DIGG Price"
+              name={
+                chart == "BADGER"
+                  ? "BADGER Price"
+                  : chart == "DIGG"
+                  ? "DIGG Price"
+                  : chart == "AUM"
+                  ? "Assets Under Management"
+                  : "BADGER Price"
+              }
               type="monotone"
               stroke="orange"
               data={
@@ -141,7 +181,7 @@ const Home = () => {
               dataKey="price"
               dot={false}
               activeDot={{ r: 8 }}
-              yAxisId="left"
+              xAxisId="xAxis"
             />
           </LineChart>
         </div>
