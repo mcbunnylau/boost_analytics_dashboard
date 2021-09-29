@@ -9,20 +9,30 @@ import Tokens from "./pages/Tokens";
 
 function App() {
   return (
-    <Router>
-      <Sidebar />
-      <Switch>
-        <Route path="/Home">
-          <Home />
-        </Route>
-        <Route path="/AUM">
-          <AUM />
-        </Route>
-        <Route path="/Tokens">
-          <Tokens />
-        </Route>
-      </Switch>
-    </Router>
+    <div
+      style={{
+        backgroundColor: "#181818",
+        color: "white",
+        display: "flex",
+        flexDirection: "row",
+        height: "100vh",
+      }}
+    >
+      <Router>
+        <Sidebar />
+        <Switch>
+          <Route path="/Home">
+            <Home />
+          </Route>
+          <Route path="/AUM">
+            <AUM />
+          </Route>
+          <Route path="/Tokens">
+            <Tokens />
+          </Route>
+        </Switch>
+      </Router>
+    </div>
   );
 }
 

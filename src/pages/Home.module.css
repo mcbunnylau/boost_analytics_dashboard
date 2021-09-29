@@ -1,0 +1,35 @@
+.wrapper {
+  border-radius: 10px;
+  background-color: #2b2b2b;
+}
+
+.content {
+  margin: 100px auto;
+  text-align: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 40px;
+}
+
+.row3 {
+  margin: 0 20px;
+  width: calc(100px * 3 - 40px);
+}
+
+.row6 {
+  margin: 0 20px;
+  width: calc(100px * 6 - 40px);
+}
+
+.row9 {
+  margin: 0 20px;
+  width: calc(100px * 9 - 40px);
+}
+
+.row12 {
+  margin: 0 20px;
+  width: calc(100px * 12 - 40px);
+}
