@@ -1,14 +1,6 @@
 import React, { useState } from "react";
 import { useEffect } from "react/cjs/react.development";
-import {
-  Legend,
-  Line,
-  LineChart,
-  ReferenceLine,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import styles from "./Home.module.css";
 
 const contracts = [
@@ -17,6 +9,7 @@ const contracts = [
 ];
 
 const Home = () => {
+  const [covalentData, setCovalentData] = useState([]);
   const [chart, setChart] = useState("");
   const [data, setData] = useState();
   const [data2, setData2] = useState();
@@ -82,10 +75,80 @@ const Home = () => {
         newEntry["price"] = entry.totalLiquidityUSD;
         return newEntry;
       });
-      console.log(newData);
+      //   console.log(newData);
       setData3(newData);
     };
     query();
+
+    // query covalent json file
+    const query_covalent = async () => {
+      const covalent_data = require("../misc/download.json");
+      const transactions = await covalent_data.data.items.map((block) => {
+        const transactions_ = block.log_events.map((txn) => {
+          let from, to, amount;
+          if (txn.sender_contract_ticker_symbol === "BADGER") {
+            txn.decoded.params.map((e) => {
+              if (e.name === "from") {
+                from = e.value;
+              } else if (e.name === "to") {
+                to = e.value;
+              } else if (e.name === "value") {
+                amount = e.value;
+              }
+            });
+          }
+          if (from != null && to != null && amount != null) {
+            return { from: from, to: to, amount: amount };
+          } else {
+            return {};
+          }
+        });
+        return transactions_;
+      });
+      for (const row of transactions) {
+        for (const txn of row) {
+          let newTxn = covalentData;
+          if (Object.keys(txn).length === 0) {
+          } else {
+            newTxn.push(txn);
+            setCovalentData(newTxn);
+          }
+        }
+      }
+      console.log(covalentData);
+
+      // total up unique user balances
+      let users = {};
+      covalentData.map((user) => {
+        if (user.from in users) {
+          users[user.from] = users[user.from] - user.amount;
+        } else {
+          users[user.from] = -user.amount;
+        }
+        if (user.to in users) {
+          users[user.to] = users[user.to] + user.amount;
+        } else {
+          users[user.to] = user.amount;
+        }
+      });
+      console.log(users);
+
+      // whales
+      let whales = {};
+      let arrUsers = Object.entries(users);
+      for (let i = 0; i < arrUsers.length - 1; i++) {
+        for (let j = 0; j < arrUsers.length - 1; j++) {
+          if (arrUsers[j][1] < arrUsers[j + 1][1]) {
+            const temp = arrUsers[j];
+            arrUsers[j] = arrUsers[j + 1];
+            arrUsers[j + 1] = temp;
+          }
+        }
+      }
+      console.log(arrUsers);
+      console.log("done");
+    };
+    query_covalent();
   }, []);
   const BADGERChart = () => {
     setChart("BADGER");
