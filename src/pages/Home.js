@@ -82,42 +82,36 @@ const Home = () => {
 
     // query covalent json file
     const query_covalent = async () => {
-      const covalent_data = require("../misc/download.json");
-      const transactions = await covalent_data.data.items.map((block) => {
-        const transactions_ = block.log_events.map((txn) => {
-          let from, to, amount;
-          if (txn.sender_contract_ticker_symbol === "BADGER") {
-            txn.decoded.params.map((e) => {
-              if (e.name === "from") {
-                from = e.value;
-              } else if (e.name === "to") {
-                to = e.value;
-              } else if (e.name === "value") {
-                amount = e.value;
-              }
-            });
-          }
-          if (from != null && to != null && amount != null) {
-            return { from: from, to: to, amount: amount };
-          } else {
-            return {};
+      const covalent_data = require("../misc/download (3).json");
+      const txns = await covalent_data.data.items.map((txn) => {
+        let from, to, amount;
+        txn.decoded.params.map((e) => {
+          if (e.name === "from") {
+            from = e.value;
+          } else if (e.name === "to") {
+            to = e.value;
+          } else if (e.name === "value") {
+            amount = e.value;
           }
         });
-        return transactions_;
+        if (from != null && to != null && amount != null) {
+          return { from: from, to: to, amount: amount };
+        } else {
+          return {};
+        }
       });
-      for (const row of transactions) {
-        for (const txn of row) {
-          let newTxn = covalentData;
-          if (Object.keys(txn).length === 0) {
-          } else {
-            newTxn.push(txn);
-            setCovalentData(newTxn);
-          }
+      for (const txn of txns) {
+        let newTxn = covalentData;
+        if (Object.keys(txn).length === 0) {
+        } else {
+          newTxn.push(txn);
+          setCovalentData(newTxn);
         }
       }
       console.log(covalentData);
+      console.log("done 1");
 
-      // total up unique user balances
+      // total up unique user and balances
       let users = {};
       covalentData.map((user) => {
         if (user.from in users) {
@@ -133,20 +127,31 @@ const Home = () => {
       });
       console.log(users);
 
-      // whales
-      let whales = {};
+      // sort descending order
+
       let arrUsers = Object.entries(users);
-      for (let i = 0; i < arrUsers.length - 1; i++) {
-        for (let j = 0; j < arrUsers.length - 1; j++) {
-          if (arrUsers[j][1] < arrUsers[j + 1][1]) {
-            const temp = arrUsers[j];
-            arrUsers[j] = arrUsers[j + 1];
-            arrUsers[j + 1] = temp;
-          }
-        }
-      }
-      console.log(arrUsers);
-      console.log("done");
+      let sortedUsers = arrUsers.sort((a, b) => {
+        return b[1] - a[1];
+      });
+
+      console.log(sortedUsers);
+      console.log("sorted");
+
+      // format 18 decimals
+      sortedUsers = sortedUsers.map((user) => {
+        let temp = user;
+        temp[1] = user[1] / 10 ** 18;
+        return temp;
+      });
+
+      console.log(sortedUsers);
+      console.log("formatted 18 dp");
+
+      // 10 whales
+      const whales = sortedUsers.slice(0, 9);
+
+      console.log(whales);
+      console.log("whales identified");
     };
     query_covalent();
   }, []);
