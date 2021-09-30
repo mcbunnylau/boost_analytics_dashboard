@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import { useEffect } from "react/cjs/react.development";
-import { Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
+import {
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import styles from "./Home.module.css";
 
 const contracts = [
@@ -10,6 +20,7 @@ const contracts = [
 
 const Home = () => {
   const [covalentData, setCovalentData] = useState([]);
+  const [pieData, setPieData] = useState([]);
   const [chart, setChart] = useState("");
   const [data, setData] = useState();
   const [data2, setData2] = useState();
@@ -82,7 +93,13 @@ const Home = () => {
 
     // query covalent json file
     const query_covalent = async () => {
-      const covalent_data = require("../misc/download (3).json");
+      // hardcopy of blocks/data
+      // const covalent_data = require("../misc/download (3).json");
+      const response = await fetch(
+        `https://api.covalenthq.com/v1/1/events/address/0x3472A5A71965499acd81997a54BBA8D852C6E53d/?starting-block=13000223&ending-block=13000224&key=ckey_6f454c7f458647b1a4d21e936ea`
+      );
+      const covalent_data = await response.json();
+      console.log(covalent_data);
       const txns = await covalent_data.data.items.map((txn) => {
         let from, to, amount;
         txn.decoded.params.map((e) => {
@@ -150,8 +167,29 @@ const Home = () => {
       // 10 whales
       const whales = sortedUsers.slice(0, 9);
 
+      // normal holders
+      const normals = sortedUsers.slice(10, sortedUsers.length);
+
       console.log(whales);
       console.log("whales identified");
+
+      // total whale balance; total normal holder bal
+      let whale_bal = 0;
+      whales.map((whale) => {
+        whale_bal += whale[1];
+      });
+      let normals_bal = 0;
+      normals.map((normal) => {
+        normals_bal += normal[1];
+      });
+
+      console.log("whale_bal: " + whale_bal);
+      console.log("normals_bal: " + normals_bal);
+
+      setPieData([
+        { user: "% Whales", value: whale_bal + 10 },
+        { user: "% Holders", value: normals_bal + 100 },
+      ]);
     };
     query_covalent();
   }, []);
@@ -164,6 +202,9 @@ const Home = () => {
   const AUMChart = () => {
     setChart("AUM");
   };
+
+  // pie chart colors
+  const COLORS = ["white", "orange"];
 
   return (
     <div className={styles.content}>
@@ -254,6 +295,24 @@ const Home = () => {
           </LineChart>
         </div>
         <div className={[styles.wrapper, styles.row3].join(" ")}>
+          <PieChart width={300 - 40} height={400}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="user"
+              outerRadius={100}
+              fill="orange"
+            >
+              {pieData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Legend />
+            <Tooltip />
+          </PieChart>
           <div>Demographic Breakdown</div>
         </div>
       </div>
