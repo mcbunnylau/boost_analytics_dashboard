@@ -25,13 +25,52 @@ const Home = () => {
   const [data, setData] = useState();
   const [data2, setData2] = useState();
   const [data3, setData3] = useState();
+  const [volumeBADGER, setVolumeBADGER] = useState();
+  const [volumeDIGG, setVolumeDIGG] = useState();
+  const [priceBADGER, setPriceBADGER] = useState();
+  const [priceDIGG, setPriceDIGG] = useState();
+  const [TVL, setTVL] = useState();
+
   useEffect(() => {
     const query = async () => {
-      // fetch BADGER
+      // BADGER Price
       let response = await fetch(
-        `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[0]}/market_chart/?vs_currency=usd&days=300`
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=badger-dao&order=market_cap_desc&per_page=100&page=1&sparkline=false`
       );
       let json = await response.json();
+      setPriceBADGER(json[0].current_price);
+
+      // DIGG Price
+      response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=digg&order=market_cap_desc&per_page=100&page=1&sparkline=false`
+      );
+      json = await response.json();
+      setPriceDIGG(json[0].current_price);
+
+      // AUM
+      response = await fetch(`https://api.llama.fi/protocol/badger-dao`);
+      json = await response.json();
+      setTVL(json.tvl[json.tvl.length - 1].totalLiquidityUSD);
+
+      // fetch 24hr volume
+      response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[0]}/market_chart/?vs_currency=usd&days=300`
+      );
+      json = await response.json();
+      setVolumeBADGER(json.total_volumes[json.total_volumes.length - 1][1]);
+
+      // no idea why this makes pie chart disappear...
+      //   response = await fetch(
+      //     `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[1]}/market_chart/?vs_currency=usd&days=300`
+      //   );
+      //   json = await response.json();
+      //   setVolumeDIGG(json.total_volumes[json.total_volumes.length - 1][1]);
+
+      // fetch BADGER
+      response = await fetch(
+        `https://api.coingecko.com/api/v3/coins/ethereum/contract/${contracts[0]}/market_chart/?vs_currency=usd&days=300`
+      );
+      json = await response.json();
       // transform BADGER data
       let newData = json.prices.map((entry) => {
         let newEntry = {};
@@ -68,6 +107,7 @@ const Home = () => {
         return newEntry;
       });
       setData2(newData);
+      setVolumeDIGG(json.total_volumes[json.total_volumes.length - 1][1]);
 
       // fetch AUM/TVL
       response = await fetch(`https://api.llama.fi/protocol/badger-dao`);
@@ -213,15 +253,15 @@ const Home = () => {
           <div className={[styles.title].join(" ")}>
             Assets Under Management (AUM)
           </div>
-          <div>$500,000,000.00</div>
+          <div>{TVL} USD</div>
         </div>
         <div className={[styles.wrapper, styles.row3].join(" ")}>
           <div>Badger DAO Price</div>
-          <div>$15.00</div>
+          <div>{priceBADGER} USD</div>
         </div>
         <div className={[styles.wrapper, styles.row3].join(" ")}>
           <div>DIGG Price</div>
-          <div>$40,000.00</div>
+          <div>{priceDIGG} USD</div>
         </div>
       </div>
       <div className={styles.column}>
@@ -319,11 +359,11 @@ const Home = () => {
       <div className={styles.column}>
         <div className={[styles.wrapper, styles.row6].join(" ")}>
           <div>24 hr Volume (Badger DAO)</div>
-          <div>1,000,000 BADGER</div>
+          <div>{volumeBADGER} USD</div>
         </div>
         <div className={[styles.wrapper, styles.row6].join(" ")}>
           <div>24 hr Volume (DIGG)</div>
-          <div>30 DIGG</div>
+          <div>{volumeDIGG} USD</div>
         </div>
       </div>
     </div>
