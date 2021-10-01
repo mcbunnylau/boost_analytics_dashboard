@@ -14,8 +14,8 @@ import {
 import styles from "./Home.module.css";
 
 const contracts = [
-  "0x3472A5A71965499acd81997a54BBA8D852C6E53d",
-  "0x798d1be841a82a273720ce31c822c61a67a601c3",
+  "0x3472A5A71965499acd81997a54BBA8D852C6E53d", // BADGER
+  "0x798d1be841a82a273720ce31c822c61a67a601c3", // DIGG
 ];
 
 const Home = () => {
